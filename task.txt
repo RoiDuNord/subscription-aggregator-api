@@ -25,13 +25,3 @@
     “user_id”: “60601fee-2bf1-4721-ae6f-7636e79a0cba”,
     “start_date”: “07-2025”
     }
-
-Мои вопросы
-1. config-config.go
-
-// Однократное выполнение загрузки конфигурации (уточни у Макса)
-var (
-	once    sync.Once
-	cfg     *AppConfig
-	loadErr error
-)

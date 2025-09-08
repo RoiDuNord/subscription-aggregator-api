@@ -27,43 +27,36 @@ type DBConfig struct {
 }
 
 type AppConfig struct {
-	SrvCfg ServerConfig
-	DBCfg  DBConfig
+	once    sync.Once
+	SrvCfg  ServerConfig
+	DBCfg   DBConfig
+	loadErr error
 }
 
-// Однократное выполнение загрузки конфигурации (уточни у Макса)
-var (
-	once    sync.Once
-	cfg     *AppConfig
-	loadErr error
-)
-
-func MustLoad() (*AppConfig, error) {
-	once.Do(func() {
-		srvCfg := &ServerConfig{}
-		dbCfg := &DBConfig{}
-
-		configs := []Config{srvCfg, dbCfg}
+func NewAppConfig() *AppConfig {
+	return &AppConfig{
+		SrvCfg: ServerConfig{},
+		DBCfg:  DBConfig{},
+	}
+}
+func (appcfg *AppConfig) MustLoad() error {
+	appcfg.once.Do(func() {
+		configs := []Config{&appcfg.SrvCfg, &appcfg.DBCfg}
 		for _, c := range configs {
 			if err := c.Load(); err != nil {
 				slog.Error("Ошибка при загрузке конфигурации", "error", err)
-				loadErr = fmt.Errorf("не удалось загрузить конфигурацию: %w", err)
+				appcfg.loadErr = fmt.Errorf("не удалось загрузить конфигурацию: %w", err)
 				return
 			}
 			if err := c.Validate(); err != nil {
 				slog.Error("Ошибка валидации конфигурации", "error", err)
-				loadErr = fmt.Errorf("не удалось валидировать конфигурацию: %w", err)
+				appcfg.loadErr = fmt.Errorf("не удалось валидировать конфигурацию: %w", err)
 				return
 			}
-		}
-
-		cfg = &AppConfig{
-			SrvCfg: *srvCfg,
-			DBCfg:  *dbCfg,
 		}
 
 		slog.Info("Все конфигурации успешно загружены")
 	})
 
-	return cfg, loadErr
+	return appcfg.loadErr
 }

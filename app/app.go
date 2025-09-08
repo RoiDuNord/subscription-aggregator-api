@@ -13,18 +13,16 @@ func MustStart() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	cfg, err := config.MustLoad()
-	if err != nil {
+	cfg := config.NewAppConfig()
+	if err := cfg.MustLoad(); err != nil {
 		return err
 	}
 
 	dbManager := db.NewDBManager()
-
 	if err := dbManager.InitDB(cfg.DBCfg); err != nil {
 		return err
 	}
 	defer dbManager.Close()
-
 	sqlStorage := storage.NewSQL(dbManager.DB)
 
 	subscriptionManager := manager.New(sqlStorage)
@@ -33,5 +31,3 @@ func MustStart() error {
 
 	return server.MustRun(cfg.SrvCfg)
 }
-
-
