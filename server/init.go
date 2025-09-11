@@ -16,20 +16,21 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-type Manager interface {
+type SubscriptionManager interface {
 	CreateSubscription(subscription models.Subscription) error
 	GetSubscription(id string) (models.Subscription, error)
-	GetSubscriptionList() ([]models.Subscription, error)
+	GetAllSubscriptions() ([]models.Subscription, error)
 	UpdateSubscription(id string, updatedSubscription models.Subscription) error
 	DeleteSubscription(id string) error
+	GetAllSubscriptionsSum() (totalSum int, err error)
 }
 
 type Server struct {
 	ctx     context.Context
-	manager Manager
+	manager SubscriptionManager
 }
 
-func Init(ctx context.Context, manager Manager) *Server {
+func Init(ctx context.Context, manager SubscriptionManager) *Server {
 	slog.Info("server initialized")
 	return &Server{
 		ctx:     ctx,
@@ -64,7 +65,6 @@ func (s *Server) MustRun(srvCfg config.ServerConfig) error {
 
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			// slog.Error("Ошибка запуска сервера", "error", err)
 			log.Fatalf("Ошибка запуска сервера: %s", err.Error())
 		}
 	}()

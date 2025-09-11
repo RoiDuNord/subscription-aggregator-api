@@ -38,9 +38,9 @@ func (dm *DBManager) InitDB(dbCfg config.DBConfig) error {
 			return
 		}
 
-		if err := dm.createTables(); err!=nil{
+		if err := dm.createTables(); err != nil {
 			dm.err = err
-			return 
+			return
 		}
 
 		slog.Info("Подключено к БД", "type", dbCfg.Type, "name", dbCfg.Name, "host", dbCfg.Host, "port", dbCfg.Port)

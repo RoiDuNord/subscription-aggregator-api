@@ -1,9 +1,5 @@
 package models
 
-import (
-	"time"
-)
-
 const (
 	StatusCreated   = "created"
 	StatusRunning   = "running"
@@ -13,15 +9,10 @@ const (
 )
 
 type Subscription struct {
-	ID          string    `json:"id" db:"id"`
-	UserID      string    `json:"user_id"`
-	ServiceName string    `json:"service_name"`
-	Status      string    `json:"status"`
-	StartDate   time.Time `json:"start_date"`
-	EndDate     time.Time `json:"end_date"`
-	Price       float64   `json:"price"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	UserID      string `json:"user_id"`
+	ServiceName string `json:"service_name"`
+	Price       int    `json:"price"`
+	StartDate   string `json:"start_date"`
 }
 
 // type Subscription struct {
