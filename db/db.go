@@ -30,6 +30,7 @@ func (dm *DBManager) InitDB(dbCfg config.DBConfig) error {
 			dm.err = fmt.Errorf("не удалось открыть подключение к базе данных: %w", dm.err)
 			return
 		}
+
 		if pingErr := dm.DB.Ping(); pingErr != nil {
 			dm.DB.Close()
 			dm.err = fmt.Errorf("не удалось выполнить ping к базе данных: %w", pingErr)
@@ -37,9 +38,34 @@ func (dm *DBManager) InitDB(dbCfg config.DBConfig) error {
 			return
 		}
 
+		if err := dm.createTables(); err!=nil{
+			dm.err = err
+			return 
+		}
+
 		slog.Info("Подключено к БД", "type", dbCfg.Type, "name", dbCfg.Name, "host", dbCfg.Host, "port", dbCfg.Port)
+
 	})
 	return dm.err
+}
+
+func (dbManager *DBManager) createTables() error {
+	query :=
+		`CREATE TABLE IF NOT EXISTS subscriptions (
+			id SERIAL PRIMARY KEY,
+			service_name VARCHAR(50) NOT NULL,
+			user_id VARCHAR(50) NOT NULL,
+			price INT NOT NULL,
+			start_date VARCHAR(7) NOT NULL
+		);`
+
+	if _, err := dbManager.DB.Exec(query); err != nil {
+		return fmt.Errorf("error executing query: %w", err)
+	}
+
+	slog.Info("Table 'subscriptions' created")
+
+	return nil
 }
 
 func (dm *DBManager) Close() error {

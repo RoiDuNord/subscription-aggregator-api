@@ -7,9 +7,9 @@ import (
 
 type SubscriptionStorage interface {
 	Create(subscription models.Subscription) error
-	GetList() ([]models.Subscription, error)
 	GetByID(id string) (models.Subscription, error)
-	Update(updated models.Subscription) (models.Subscription, error)
+	GetList() ([]models.Subscription, error)
+	Update(id string, updated models.Subscription) error
 	Delete(id string) error
 }
 
@@ -33,11 +33,11 @@ func (sm *SubscriptionManager) GetSubscription(id string) (models.Subscription, 
 	return sm.storage.GetByID(id)
 }
 
-func (sm *SubscriptionManager) UpdateSubscription(id string, updated models.Subscription) (models.Subscription, error) {
+func (sm *SubscriptionManager) UpdateSubscription(id string, updated models.Subscription) error {
 	if id != updated.ID {
-		return models.Subscription{}, errors.New("mismatched subscription ID")
+		return errors.New("mismatched subscription ID")
 	}
-	return sm.storage.Update(updated)
+	return sm.storage.Update(id, updated)
 }
 
 func (sm *SubscriptionManager) DeleteSubscription(id string) error {

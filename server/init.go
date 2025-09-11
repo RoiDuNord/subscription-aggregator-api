@@ -18,9 +18,9 @@ import (
 
 type Manager interface {
 	CreateSubscription(subscription models.Subscription) error
-	GetSubscriptionList() ([]models.Subscription, error)
 	GetSubscription(id string) (models.Subscription, error)
-	UpdateSubscription(id string, updatedSubscription models.Subscription) (models.Subscription, error)
+	GetSubscriptionList() ([]models.Subscription, error)
+	UpdateSubscription(id string, updatedSubscription models.Subscription) error
 	DeleteSubscription(id string) error
 }
 
@@ -40,10 +40,10 @@ func Init(ctx context.Context, manager Manager) *Server {
 func (s *Server) setupRouter() *chi.Mux {
 	router := chi.NewRouter()
 
-	router.Post("/subscriptions", s.Create)        // Создать новую подписку
-	router.Get("/subscriptions", s.GetList)        // Получить список подписок (с фильтрами)
-	router.Get("/subscriptions/{id}", s.Get)       // Получить одну подписку
-	router.Delete("/subscriptions/{id}", s.Delete) // Удалить подписку cannot use s.Delete (value of type func() error) as http.HandlerFunc value in argument to router.Delete compilerIncompatibleAssign
+	router.Post("/subscriptions", s.Create)
+	router.Get("/subscriptions", s.GetList)
+	router.Get("/subscriptions/{id}", s.Get)
+	router.Delete("/subscriptions/{id}", s.Delete)
 	router.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),
 	))
