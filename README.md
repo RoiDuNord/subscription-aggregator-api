@@ -76,7 +76,8 @@ DELETE  http://localhost:8080/subscriptions/sum
 
 ```
 PUT http://localhost:8080/subscriptions/{id}
-
+```
+```
 {
     "service_name": "Sber Plus",
     "price": 250,
