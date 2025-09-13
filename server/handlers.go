@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	ErrMethodNotAllowed      = "Method not allowed"
 	ErrSubscriptionNotFound  = "Subscription not found"
 	ErrSubscriptionsNotFound = "Subscriptions not found"
 	ErrInternalServerError   = "Internal Server Error"
@@ -23,16 +22,19 @@ const (
 )
 
 // ErrorResponse описывает тело ошибки
+// swagger:model ErrorResponse
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-// ResultResponse описывает ответ с результатом операции
-type ResultResponse struct {
+// Response описывает ответ с результатом операции
+// swagger:model Response
+type Response struct {
 	Status string `json:"status"`
 }
 
 // TotalSumResponse описывает ответ с суммой подписок
+// swagger:model TotalSumResponse
 type TotalSumResponse struct {
 	TotalSum int `json:"total_sum"`
 }
@@ -76,7 +78,7 @@ func (s *Server) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.Info("Subscription created successfully", "service_name", subscription.ServiceName, "user_id", subscription.UserID)
-	writeJSON(w, http.StatusCreated, ResultResponse{Status: StatusCreated})
+	writeJSON(w, http.StatusCreated, Response{Status: StatusCreated})
 }
 
 // @Summary      Получить информацию о подписке
@@ -89,7 +91,7 @@ func (s *Server) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure      500  {object}  ErrorResponse
 // @Router       /subscriptions/{id} [get]
 func (s *Server) Get(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id") // на каком уровне нужно преобразовывать в число?
+	id := chi.URLParam(r, "id")
 
 	subscription, err := s.manager.GetSubscription(id)
 	if err != nil {
@@ -150,7 +152,7 @@ func (s *Server) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.Info("Subscription updated successfully", "id", id)
-	writeJSON(w, http.StatusOK, ResultResponse{Status: StatusUpdated})
+	writeJSON(w, http.StatusOK, Response{Status: StatusUpdated})
 }
 
 // @Summary      Удалить подписку

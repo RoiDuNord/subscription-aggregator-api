@@ -85,7 +85,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/server.ResultResponse"
+                            "$ref": "#/definitions/server.Response"
                         }
                     },
                     "400": {
@@ -209,7 +209,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/server.ResultResponse"
+                            "$ref": "#/definitions/server.Response"
                         }
                     },
                     "400": {
@@ -254,6 +254,12 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -271,54 +277,89 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.Subscription": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "description": "ID подписки\nexample: 123",
-                    "type": "integer"
-                },
-                "user_id": {
-                    "description": "Идентификатор пользователя, владеющего подпиской\nexample: 550e8400-e29b-41d4-a716-446655440000",
-                    "type": "string"
-                },
-                "service_name": {
-                    "description": "Название сервиса подписки\nexample: Netflix",
-                    "type": "string"
-                },
-                "price": {
-                    "description": "Цена подписки в целых единицах\nexample: 1499",
-                    "type": "integer"
-                },
-                "start_date": {
-                    "description": "Дата начала подписки в формате ISO8601\nexample: 2023-07-18",
-                    "type": "string"
-                }
-            }
-        },
         "server.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Сообщение об ошибке"
                 }
+            },
+            "required": [
+                "error"
+            ],
+            "example": {
+                "error": "Message"
             }
         },
-        "server.ResultResponse": {
+        "server.Response": {
             "type": "object",
             "properties": {
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Статус ответа"
                 }
+            },
+            "required": [
+                "status"
+            ],
+            "example": {
+                "status": "ok"
             }
         },
         "server.TotalSumResponse": {
             "type": "object",
             "properties": {
                 "total_sum": {
-                    "type": "integer"
+                    "type": "integer",
+                    "format": "int",
+                    "description": "Общая сумма"
                 }
+            },
+            "required": [
+                "total_sum"
+            ],
+            "example": {
+                "total_sum": 12345
             }
+        },
+        "models.Subscription": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "int",
+                    "description": "ID подписки",
+                    "example": "11"
+                },
+                "user_id": {
+                    "type": "string",
+                    "description": "Идентификатор пользователя, владеющего подпиской",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "service_name": {
+                    "type": "string",
+                    "description": "Название сервиса подписки",
+                    "example": "Netflix"
+                },
+                "price": {
+                    "type": "integer",
+                    "format": "int",
+                    "description": "Цена подписки в целых единицах",
+                    "example": 1499
+                },
+                "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Дата начала подписки в формате ISO8601",
+                    "example": "2023-07-18"
+                }
+            },
+            "required": [
+                "user_id",
+                "service_name",
+                "price",
+                "start_date"
+            ]
         }
     }
 }`
