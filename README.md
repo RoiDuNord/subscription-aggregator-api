@@ -40,11 +40,12 @@ git clone https://github.com/RoiDuNord/subscription_aggregator_api.git
 docker-compose up -d --build
 ```
 
-3. Передайте задачу с помощью json
+3. Передайте подписку с помощью json
 
 ```
 POST  http://localhost:8080/subscriptions
-
+```
+```
 {
     "service_name": "Sber Prime",
     "price": 200,
