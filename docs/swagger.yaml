@@ -1,0 +1,225 @@
+basePath: /
+definitions:
+  models.Subscription:
+    properties:
+      id:
+        description: |-
+          ID подписки
+          example: 123
+        type: integer
+      user_id:
+        description: |-
+          Идентификатор пользователя, владеющего подпиской
+          example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      service_name:
+        description: |-
+          Название сервиса подписки
+          example: Netflix
+        type: string
+      price:
+        description: |-
+          Цена подписки в целых единицах
+          example: 1499
+        type: integer
+      start_date:
+        description: |-
+          Дата начала подписки в формате ISO8601
+          example: 2023-07-18
+        type: string
+    type: object
+  server.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  server.ResultResponse:
+    properties:
+      status:
+        type: string
+    type: object
+  server.TotalSumResponse:
+    properties:
+      total_sum:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: http://www.example.com/support
+  description: API for Managing Subscriptions
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Subscription Aggregator API
+  version: "1.0"
+paths:
+  /subscriptions:
+    get:
+      description: Возвращает список всех подписок
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: "#/definitions/models.Subscription"
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+      summary: Получить список подписок
+      tags:
+        - subscriptions
+    post:
+      consumes:
+        - application/json
+      description: Создаёт новую подписку
+      parameters:
+        - description: Подписка
+          in: body
+          name: subscription
+          required: true
+          schema:
+            $ref: "#/definitions/models.Subscription"
+      produces:
+        - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/server.ResultResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+        "405":
+          description: Method Not Allowed
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+      summary: Создать подписку
+      tags:
+        - subscriptions
+  /subscriptions/{id}:
+    delete:
+      description: Удаляет подписку по ID
+      parameters:
+        - description: ID подписки
+          in: path
+          name: id
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+      summary: Удалить подписку
+      tags:
+        - subscriptions
+    get:
+      description: Возвращает подписку по ID
+      parameters:
+        - description: ID подписки
+          in: path
+          name: id
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/models.Subscription"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+      summary: Получить информацию о подписке
+      tags:
+        - subscriptions
+    put:
+      consumes:
+        - application/json
+      description: Обновляет подписку по ID
+      parameters:
+        - description: ID подписки
+          in: path
+          name: id
+          required: true
+          type: string
+        - description: Обновлённая подписка
+          in: body
+          name: subscription
+          required: true
+          schema:
+            $ref: "#/definitions/models.Subscription"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/server.ResultResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+      summary: Обновить информацию о подписке
+      tags:
+        - subscriptions
+  /subscriptions/sum:
+    get:
+      description: Возвращает сумму цен всех подписок
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/server.TotalSumResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/server.ErrorResponse"
+      summary: Получить сумму всех подписок
+      tags:
+        - subscriptions
+schemes:
+  - http
+  - https
+swagger: "2.0"

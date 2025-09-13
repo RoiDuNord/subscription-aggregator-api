@@ -1,29 +1,30 @@
 package models
 
-const (
-	StatusCreated   = "created"
-	StatusRunning   = "running"
-	StatusCompleted = "completed"
-	StatusUpdated   = "updated"
-	ResultCompleted = "subscription completed successfully"
+import (
+	"github.com/google/uuid"
 )
 
+// Subscription описывает подписку
+//
+// swagger:model Subscription
 type Subscription struct {
-	UserID      string `json:"user_id"`
+	// ID подписки
+	// example: 123
+	ID int `json:"id,omitempty"`
+
+	// Идентификатор пользователя, владеющего подпиской
+	// example: 550e8400-e29b-41d4-a716-446655440000
+	UserID uuid.UUID `json:"user_id"`
+
+	// Название сервиса подписки
+	// example: Netflix
 	ServiceName string `json:"service_name"`
-	Price       int    `json:"price"`
-	StartDate   string `json:"start_date"`
+
+	// Цена подписки в целых единицах
+	// example: 1499
+	Price int `json:"price"`
+
+	// Дата начала подписки в формате ISO8601
+	// example: 2023-07-18
+	StartDate string `json:"start_date"`
 }
-
-// type Subscription struct {
-// 	ID           string    `json:"id"`
-// 	Name         string    `json:"name"`
-// 	Status       string    `json:"status"`
-// 	CreationTime time.Time `json:"creation_time"`
-// 	StartTime    time.Time `json:"start_time,omitzero"`
-// 	FinishTime   time.Time `json:"finish_time,omitzero"`
-// 	Duration     float32   `json:"duration_sec,omitempty"`
-// 	Result       string    `json:"result,omitempty"`
-
-// 	CancelFunc context.CancelFunc `json:"-"`
-// }

@@ -12,18 +12,18 @@ type Config interface {
 }
 
 type ServerConfig struct {
-	Host string `env:"SERVER_HOST" envDefault:"localhost"`
-	Port int    `env:"SERVER_PORT" envDefault:"8080"`
+	Host string `env:"SERVER_HOST"`
+	Port int    `env:"SERVER_PORT"`
 }
 
 type DBConfig struct {
-	Type     string `env:"DB_TYPE" envDefault:"postgres"`
-	Host     string `env:"DB_HOST" envDefault:"localhost"`
-	Port     int    `env:"DB_PORT" envDefault:"5432"`
-	User     string `env:"DB_USER" envDefault:"user"`
-	Password string `env:"DB_PASSWORD,required"`
-	Name     string `env:"DB_NAME" envDefault:"db"`
-	SSLMode  string `env:"DB_SSLMODE" envDefault:"disable"`
+	Type     string `env:"DB_TYPE"`
+	Host     string `env:"DB_HOST"`
+	Port     int    `env:"DB_PORT"`
+	User     string `env:"DB_USER"`
+	Password string `env:"DB_PASSWORD"`
+	Name     string `env:"DB_NAME"`
+	SSLMode  string `env:"DB_SSLMODE"`
 }
 
 type AppConfig struct {
@@ -39,23 +39,19 @@ func NewAppConfig() *AppConfig {
 		DBCfg:  DBConfig{},
 	}
 }
+
 func (appcfg *AppConfig) MustLoad() error {
 	appcfg.once.Do(func() {
 		configs := []Config{&appcfg.SrvCfg, &appcfg.DBCfg}
 		for _, c := range configs {
 			if err := c.Load(); err != nil {
-				slog.Error("Ошибка при загрузке конфигурации", "error", err)
-				appcfg.loadErr = fmt.Errorf("не удалось загрузить конфигурацию: %w", err)
-				return
-			}
-			if err := c.Validate(); err != nil {
-				slog.Error("Ошибка валидации конфигурации", "error", err)
-				appcfg.loadErr = fmt.Errorf("не удалось валидировать конфигурацию: %w", err)
+				slog.Error("Error loading configuration", "error", err)
+				appcfg.loadErr = fmt.Errorf("failed to load configuration: %w", err)
 				return
 			}
 		}
 
-		slog.Info("Все конфигурации успешно загружены")
+		slog.Info("Configuration data loaded successfully")
 	})
 
 	return appcfg.loadErr

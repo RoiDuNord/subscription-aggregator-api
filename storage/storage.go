@@ -2,8 +2,13 @@ package storage
 
 import (
 	"database/sql"
-	"fmt"
+	"errors"
 	"subscription-aggregator-api/models"
+)
+
+var (
+	ErrSubscriptionNotFound = errors.New("subscription not found")
+	ErrNoSubscriptions      = errors.New("no subscriptions found")
 )
 
 type SQLStorage struct {
@@ -19,23 +24,57 @@ func NewSQL(db *sql.DB) *SQLStorage {
 func (s *SQLStorage) Create(subscription models.Subscription) error {
 	query := `
 		INSERT INTO subscriptions (service_name, user_id, price, start_date)
-		VALUES ($1, $2, $3, $4)
+		VALUES ($1, $2, $3, $4);
 	`
 
-	_, err := s.db.Exec(query,
+	result, err := s.db.Exec(query,
 		subscription.ServiceName,
 		subscription.UserID,
 		subscription.Price,
 		subscription.StartDate,
 	)
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrSubscriptionNotFound
+	}
+
+	return nil
+}
+
+func (s *SQLStorage) GetByID(id int) (models.Subscription, error) {
+	var subscription models.Subscription
+
+	query := `
+		SELECT id, user_id, service_name, price, start_date
+		FROM subscriptions
+		WHERE id = $1;
+	`
+
+	result := s.db.QueryRow(query, id)
+
+	err := result.Scan(&subscription.ID, &subscription.UserID, &subscription.ServiceName, &subscription.Price, &subscription.StartDate)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.Subscription{}, ErrSubscriptionNotFound
+		}
+		return models.Subscription{}, err
+	}
+
+	return subscription, nil
 }
 
 func (s *SQLStorage) GetList() ([]models.Subscription, error) {
 	query := `
-		SELECT user_id, service_name, price, start_date, end_date
-		FROM subscriptions
+		SELECT id, user_id, service_name, price, start_date
+		FROM subscriptions;
 	`
 
 	rows, err := s.db.Query(query)
@@ -48,10 +87,11 @@ func (s *SQLStorage) GetList() ([]models.Subscription, error) {
 
 	for rows.Next() {
 		var subscription models.Subscription
-		err := rows.Scan(&subscription.UserID, &subscription.ServiceName, &subscription.Price, &subscription.StartDate)
+		err := rows.Scan(&subscription.ID, &subscription.UserID, &subscription.ServiceName, &subscription.Price, &subscription.StartDate)
 		if err != nil {
 			return nil, err
 		}
+		subscription.StartDate = subscription.StartDate[:10]
 		subscriptions = append(subscriptions, subscription)
 	}
 
@@ -59,35 +99,18 @@ func (s *SQLStorage) GetList() ([]models.Subscription, error) {
 		return nil, err
 	}
 
+	if len(subscriptions) == 0 {
+		return nil, ErrNoSubscriptions
+	}
+
 	return subscriptions, nil
 }
 
-func (s *SQLStorage) GetByID(id string) (models.Subscription, error) {
-	var subscription models.Subscription
-
-	query := `
-		SELECT * FROM subscriptions
-		WHERE id = $1
-	`
-
-	result := s.db.QueryRow(query, id)
-
-	err := result.Scan(&subscription.UserID, &subscription.ServiceName, &subscription.Price, &subscription.StartDate)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return models.Subscription{}, fmt.Errorf("subscription with id %s not found", id)
-		}
-		return models.Subscription{}, err
-	}
-
-	return subscription, nil
-}
-
-func (s *SQLStorage) Update(id string, updatedSubscription models.Subscription) error {
+func (s *SQLStorage) Update(id int, updatedSubscription models.Subscription) error {
 	query := `
 		UPDATE subscriptions
 		SET user_id = $2, service_name = $3, price = $4, start_date = $5
-		WHERE id = $1
+		WHERE id = $1;
 	`
 
 	result, err := s.db.Exec(query, id,
@@ -106,16 +129,16 @@ func (s *SQLStorage) Update(id string, updatedSubscription models.Subscription) 
 		return err
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("subscription with id %s not found or no changes made", id)
+		return ErrSubscriptionNotFound
 	}
 
 	return nil
 }
 
-func (s *SQLStorage) Delete(id string) error {
+func (s *SQLStorage) Delete(id int) error {
 	query := `
 		DELETE FROM subscriptions
-		WHERE id = $1
+		WHERE id = $1;
 	`
 
 	result, err := s.db.Exec(query, id)
@@ -128,7 +151,7 @@ func (s *SQLStorage) Delete(id string) error {
 		return err
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("subscription with id %s not found or no changes made", id)
+		return ErrSubscriptionNotFound
 	}
 
 	return nil
@@ -136,8 +159,8 @@ func (s *SQLStorage) Delete(id string) error {
 
 func (s *SQLStorage) GetTotalSum() (int, error) {
 	query := `
-		SELECT SUM(price) as total_price
-		FROM subscriptions
+		SELECT COALESCE(SUM(price), 0) as total_price
+		FROM subscriptions;
 	`
 
 	var totalSum int
@@ -145,7 +168,7 @@ func (s *SQLStorage) GetTotalSum() (int, error) {
 	result := s.db.QueryRow(query)
 
 	if err := result.Scan(&totalSum); err != nil {
-		return 0, fmt.Errorf("failed to scan total sum: %w", err)
+		return 0, err
 	}
 
 	return totalSum, nil
